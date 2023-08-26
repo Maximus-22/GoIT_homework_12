@@ -31,8 +31,9 @@ class Phone(Field):
         if phone != "" and phone.isdigit() and len(phone) >= 10:
             self.__private_phone = phone
         else:
-            raise Exception("You entered an incorrect phone number!\n\
-                            The [lenght] of phone number should be >= 10!")
+            print("You entered an incorrect phone number!\n\
+                   The each simbol of phone number must be digital\n\
+                   and [lenght] phone number should be >= 10!")
 
 
 class Birthday(Field):
@@ -58,14 +59,6 @@ class Birthday(Field):
             else:
                 raise Exception("You entered wrong date of birth!\n\
                                  Format date of birth is [dd/mm/yyyy].")
-        # else:
-        #     self.__private_birthday = ""
-            # if 1 <= int(db_day) <= 31 and 1 <= int(db_month) <= 12 and int(db_year) > 1900:
-            # # if datetime(year = db_year, month = db_month, day = db_day):
-            #     self.__private_birthday = birthday
-            # else:
-            #     raise Exception("You entered wrong date of birth!\n\
-            #                     Format date of birth is [dd/mm/yyyy].")
 
 
 class Record:
@@ -153,16 +146,27 @@ class AddressBook(UserDict):
         else:
             self.data[record.name.name] = record
 
-    def edit_record(self, name, phone):
-        if name in self.data:
+    def edit_record(self, action: str, name: str, phone: str, phone_new: str=None):
+        if action == "remove" and name in self.data:
             record = self.data[name]
             record.remove_phone(phone)
+        if action == "change" and name in self.data:
+            record = self.data[name]
+            record.change_phone(phone, phone_new)
 
     def show_record(self, name):
+        # if name in self.data:
+        #     record = self.data[name]
+        #     phones = ", ".join([phone.phone for phone in record.phones])
+        #     print(f"Contact {name} has phone: {phones}")
         if name in self.data:
             record = self.data[name]
             phones = ", ".join([phone.phone for phone in record.phones])
-            print(f"Contact {name} has phone: {phones}")
+            birthday = record.birthday.birthday if record.birthday else ""
+            days_to_birthday = record.days_to_birthday()
+            (lambda days_to_birthday: print(f"Contact: {name}, Phone: {phones}, \nDay of birthday: {birthday}, he (she) birthday will be in {days_to_birthday} days.")
+            if days_to_birthday else print(f"Contact: {name}, Phone: {phones}, \nDay of birthday: not presented."))(days_to_birthday)
+
 
     def show_day_to_birthday(self, name):
         # Record.name -> Record(Name(name)) -> Record.name.name
@@ -173,6 +177,7 @@ class AddressBook(UserDict):
                 print(f"{name} was born {record.birthday.birthday}, he (she) birthday will be in {record.days_to_birthday()} days.")
             else:
                 print(f"There is no birthday date for {name}.")
+
 
     # def show_addressbook(self):
         # for name in sorted(self.data):
@@ -193,20 +198,20 @@ class AddressBook(UserDict):
             except StopIteration:
                 break
 
-    def search_record(self, search_fragment):
-        search_record = 0
-        for name in sorted(self.data):
-            record = self.data[name]
-            phones = ", ".join([phone.value for phone in record.phones])
-            birthday = record.birthday.value
+    def search_record(self, search_fragment: str):
+        found_record = 0
+        for name, record in sorted(self.data.items()):
+            # record = self.data[name]
+            phones = ", ".join([phone.phone for phone in record.phones])
+            birthday = record.birthday.birthday if record.birthday else ""
             if search_fragment.isalpha() and search_fragment.lower() in name.lower():
                 print("{:<20} | {:^14} | --> {:<15}".format(name, birthday, phones))
-                search_record +=1
+                found_record +=1
             elif search_fragment.isdigit() and search_fragment in phones:
                 print("{:<20} | {:^14} | --> {:<15}".format(name, birthday, phones))
-                search_record +=1
-        if not search_record:
-            print("Nothing found!")
+                found_record +=1
+        (lambda found_record: print(f"In the pocketbook found {found_record} record.")
+         if found_record else print("There is nothing found!"))(found_record)
 
     def open_addressbook(self, file_name: str):
         # if os.path.exists(file_name):
@@ -250,7 +255,7 @@ class AddressBook(UserDict):
         with open(file_name, "w", encoding = "UTF-8") as file:
             pocket_data = []
             
-            for name, record in self.data.items():
+            for name, record in sorted(self.data.items()):
                     user_data ={"name": name,
                                 "birthday": record.birthday.birthday if record.birthday else "",
                                 "phones": ",".join([phone.phone for phone in record.phones])}

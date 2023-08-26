@@ -1,13 +1,18 @@
 [
      {
+          "name": "Maks",
+          "birthday": "",
+          "phones": "0674032578,0632510728"
+     },
+     {
+          "name": "Maria",
+          "birthday": "",
+          "phones": "0932513297"
+     },
+     {
           "name": "Petro",
           "birthday": "02/02/1980",
           "phones": "0674032525,0637211235"
-     },
-     {
-          "name": "Петро",
-          "birthday": "12/12/1979",
-          "phones": "0679110219"
      },
      {
           "name": "Каріна",
@@ -15,13 +20,8 @@
           "phones": "0977176161"
      },
      {
-          "name": "Maria",
-          "birthday": "",
-          "phones": "0935480876"
-     },
-     {
-          "name": "Maks",
-          "birthday": "",
-          "phones": "0674032578,0632510728"
+          "name": "Петро",
+          "birthday": "12/12/1979",
+          "phones": "0445471908"
      }
 ]

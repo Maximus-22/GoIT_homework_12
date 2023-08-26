@@ -1,7 +1,5 @@
-# import os
 from colorama import init, Fore
 from config_pb import Name, Phone, Birthday, Record, AddressBook
-from sanitaze_phone_number import sanitaze_phone_number as sphn
 
 
 address_book = AddressBook()
@@ -27,16 +25,17 @@ def handler_com_day_to_birthday(name: str, *args):
     address_book.show_day_to_birthday(name)
 
 
-def handler_com_change(name: str, phone: str, *args):
-    print(f"Contact {name} with number {phone} was successfully changed.")
+def handler_com_change(name: str, phone_old: str, phone_new: str, *args):
+    address_book.edit_record("change", name, phone_old, phone_new)
+    print(f"Contact {name} with number {phone_new} was successfully changed.")
 
 
 def handler_com_remove(name: str, phone: str, *args):
-    address_book.edit_record(name, phone)
+    address_book.edit_record("remove", name, phone)
     print(f"Phone number {phone} from contact {name} was successfully removed.")
 
 
-def handler_com_phone(name: str, *args):
+def handler_com_info(name: str, *args):
     address_book.show_record(name)
 
 
@@ -46,12 +45,18 @@ def handler_com_showall(*args):
     address_book.show_addressbook(address_book)
 
 
+def handler_com_search(search_fragment, *args):
+    address_book.search_record(search_fragment)
+
+
 def handler_com_help(*args):
     init(autoreset = True)
     introduse = "This is pocket phonebook.\n" \
                 "For exit write [\"close\", \"exit\", \"goodbye\"].\n" \
-                "Available Commands [\"add Name Phone\", \"change Name Phone\", \"help\", \"phone Name\",\n" \
-                "\"remove Name Phone\", \"showall\", \"birthday Name dd/mm/yyyy\", \"day Name\"]."
+                "Available Commands:\n" \
+                "[\"add NAME PHONE\", \"change NAME PHONE\", \"remove NAME OLD-PHONE NEW-PHONE\",\n" \
+                "\"search NAME[PHONE]\", \"info NAME\", \"showall\", \"help\",\n" \
+                "\"birthday NAME dd/mm/yyyy\", \"day NAME\"]."
     print(Fore.YELLOW + introduse)
 
 
@@ -62,8 +67,8 @@ def handler_com_exit(*args):
 
 COMMANDS = {"add": handler_com_add, "change": handler_com_change, "close": handler_com_exit,\
             "exit": handler_com_exit, "goodbye": handler_com_exit, "help": handler_com_help,\
-            "phone": handler_com_phone, "remove": handler_com_remove, "showall": handler_com_showall,
-            "birthday": handler_com_add_birthday, "day": handler_com_day_to_birthday}
+            "info": handler_com_info, "remove": handler_com_remove, "showall": handler_com_showall,\
+            "search": handler_com_search, "birthday": handler_com_add_birthday, "day": handler_com_day_to_birthday}
 
 
 def input_error(get_handler):
@@ -90,22 +95,32 @@ def input_error(get_handler):
 
 
 @input_error
-def get_handler(command: str, name: str, phone: str):
-    return COMMANDS[command](name, phone)
+def get_handler(command, arg1, arg2, arg3):
+    return COMMANDS[command](arg1, arg2, arg3)
 
 
-def command_validator(command, name, value):    # з командою [birthday] приходить "dd/mm/yyyy"
+def command_validator(command, arg1, arg2, arg3):    # з командою [birthday] приходить "dd/mm/yyyy"
     if command not in COMMANDS:
         error = KeyError
-    elif command in ("add", "change", "remove", "birthday") and (name is None or value is None):
+    elif command == "change" and (arg1 is None or arg2 is None or arg3 is None):
         error = IndexError
-    elif command == "phone" and name is None:
+    elif command in ("add", "change", "remove", "birthday") and (arg1 is None or arg2 is None):
         error = IndexError
-    elif command in ("add", "change", "remove") and not (name.isalpha() and value.isdigit() and len(value) >= 10):
+    elif command in ("phone", "search") and arg1 is None:
+        error = IndexError
+    elif command in ("change", "phone", "remove") and arg1 not in address_book:
         error = ValueError
-    elif command in ("change", "phone", "remove") and name not in address_book:
+    elif command == "search" and not (arg1.isalpha() or arg1.isdigit()):
         error = ValueError
-    elif command == "birthday" and len(value) != 10:
+    elif command == "remove" and not (arg2.isdigit() and len(arg2) >= 10):
+        error = ValueError
+    elif command == "change" and not (arg2.isdigit() and len(arg2) >= 10 and arg3.isdigit() and len(arg3) >= 10):
+        error = ValueError
+    elif command == "add" and not arg1.isalpha():
+        error = ValueError
+    elif command == "add" and not (arg2.isdigit() and len(arg2) >= 10):
+        error = ValueError
+    elif command == "birthday" and not ("/" in arg2 and len(arg2) == 10):
         error = ValueError
     else:
         error = None
@@ -113,26 +128,12 @@ def command_validator(command, name, value):    # з командою [birthday]
 
 
 def command_parser(command_input: str) -> tuple:
-    command_split = command_input.strip().split()
-    if len(command_split) == 1:
-        command = command_split[0].lower()
-        return command, None, None
-    elif len(command_split) == 2:
-        command = command_split[0].lower()
-        name = command_split[1].lower().title() if len(command_split[1]) > 2 else None
-        return command, name, None
-    elif len(command_split) >= 3:
-        if "/" in command_split[2]:
-            command = command_split[0].lower()
-            name = command_split[1].lower().title() if len(command_split[1]) > 2 else None
-            birthday = command_split[2] if len(command_split[2]) == 10 else None
-            return command, name, birthday
-        else:
-            command = command_split[0].lower()
-            name = command_split[1].lower().title() if len(command_split[1]) > 2 else None
-            phone = command_split[2] if len(command_split[2]) >= 10 else None
-            sanitazed_phone = sphn(phone)
-            return command, name, sanitazed_phone
+    command_split = command_input.split()
+    command = command_split[0].lower() if len(command_split) > 0 else None
+    arg1 = command_split[1].lower().title() if len(command_split) > 1 else None
+    arg2 = command_split[2] if len(command_split) > 2 else None
+    arg3 = command_split[3] if len(command_split) > 3 else None
+    return command, arg1, arg2, arg3
 
 
 def main():
@@ -149,8 +150,8 @@ def main():
         if not command_input:
             continue
         
-        (command, name, value) = command_parser(command_input)
-        get_handler(command, name, value)
+        (command, arg1, arg2, arg3) = command_parser(command_input)
+        get_handler(command, arg1, arg2, arg3)
         
         if command in ("exit", "close", "goodbye"):
             address_book.close_addressbook(file_name)  
