@@ -10,13 +10,18 @@
           "phones": "0679110219"
      },
      {
-          "name": "Kris",
-          "birthday": "",
-          "phones": "0339190317,0351129090"
-     },
-     {
           "name": "Каріна",
           "birthday": "09/09/1989",
           "phones": "0977176161"
+     },
+     {
+          "name": "Maria",
+          "birthday": "",
+          "phones": "0935480876"
+     },
+     {
+          "name": "Maks",
+          "birthday": "",
+          "phones": "0674032578,0632510728"
      }
 ]

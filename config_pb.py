@@ -187,16 +187,26 @@ class AddressBook(UserDict):
                 for _ in range(page_size):
                     record = next(iterator)
                     # Виведення запису
-                    if record.birthday:
-                        print("{:<20} | {:^14} | --> {:<15}".format(record.name.name, 
-                                                                    record.birthday.birthday,
-                                                                    ", ".join([phone.phone for phone in record.phones])))
-                    else:
-                        print("{:<20} | {:^14} | --> {:<15}".format(record.name.name,
-                                                                    "",
-                                                                    ", ".join([phone.phone for phone in record.phones])))
+                    print("{:<20} | {:^14} | --> {:<15}".format(record.name.name, 
+                                                                record.birthday.birthday if record.birthday else "",
+                                                                ", ".join([phone.phone for phone in record.phones])))
             except StopIteration:
                 break
+
+    def search_record(self, search_fragment):
+        search_record = 0
+        for name in sorted(self.data):
+            record = self.data[name]
+            phones = ", ".join([phone.value for phone in record.phones])
+            birthday = record.birthday.value
+            if search_fragment.isalpha() and search_fragment.lower() in name.lower():
+                print("{:<20} | {:^14} | --> {:<15}".format(name, birthday, phones))
+                search_record +=1
+            elif search_fragment.isdigit() and search_fragment in phones:
+                print("{:<20} | {:^14} | --> {:<15}".format(name, birthday, phones))
+                search_record +=1
+        if not search_record:
+            print("Nothing found!")
 
     def open_addressbook(self, file_name: str):
         # if os.path.exists(file_name):
@@ -239,28 +249,14 @@ class AddressBook(UserDict):
         #             file.write(f"{name};{phones};\n")
         with open(file_name, "w", encoding = "UTF-8") as file:
             pocket_data = []
-
-            for name in self.data:
-                record = self.data[name]
-                if record.birthday:
+            
+            for name, record in self.data.items():
                     user_data ={"name": name,
-                                "birthday": record.birthday.birthday,
-                                "phones": ",".join([phone.phone for phone in record.phones])}
-                # record = self.data[name]
-                # phones = ",".join([phone.phone for phone in record.phones])
-                # file.write(f"{record.name.name};{phones}\n")
-                # if record.birthday != "":
-                    pocket_data.append(user_data)
-                else:
-                    user_data ={"name": name,
-                                "birthday": "",
+                                "birthday": record.birthday.birthday if record.birthday else "",
                                 "phones": ",".join([phone.phone for phone in record.phones])}
                     pocket_data.append(user_data)
+            
             json.dump(pocket_data, file, ensure_ascii=False, indent=5)
-                # if record.birthday:
-                #     file.write(f"{name};{phones};{record.birthday.birthday}\n")
-                # else:
-                #     file.write(f"{name};{phones};\n")
 
 
 
