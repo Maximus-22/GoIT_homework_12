@@ -1,8 +1,13 @@
 [
      {
+          "name": "Barby",
+          "birthday": "01/04/1985",
+          "phones": ""
+     },
+     {
           "name": "Maks",
           "birthday": "",
-          "phones": "0674032578,0632510728"
+          "phones": "0674032578,0632510728,0444607424"
      },
      {
           "name": "Maria",

@@ -54,9 +54,9 @@ def handler_com_help(*args):
     introduse = "This is pocket phonebook.\n" \
                 "For exit write [\"close\", \"exit\", \"goodbye\"].\n" \
                 "Available Commands:\n" \
-                "[\"add NAME PHONE\", \"change NAME PHONE\", \"remove NAME OLD-PHONE NEW-PHONE\",\n" \
+                "[\"add NAME PHONE\", \"change NAME OLD-PHONE NEW-PHONE\", \"remove NAME PHONE\",\n" \
                 "\"search NAME[PHONE]\", \"info NAME\", \"showall\", \"help\",\n" \
-                "\"birthday NAME dd/mm/yyyy\", \"day NAME\"]."
+                "\"birthday[add] NAME dd/mm/yyyy\", \"day NAME\"]."
     print(Fore.YELLOW + introduse)
 
 
@@ -116,9 +116,12 @@ def command_validator(command, arg1, arg2, arg3):    # з командою [birt
         error = ValueError
     elif command == "change" and not (arg2.isdigit() and len(arg2) >= 10 and arg3.isdigit() and len(arg3) >= 10):
         error = ValueError
-    elif command == "add" and not arg1.isalpha():
-        error = ValueError
-    elif command == "add" and not (arg2.isdigit() and len(arg2) >= 10):
+    # elif command == "add" and not arg1.isalpha():
+    #     error = ValueError
+    # elif command == "add" and not (arg2.isdigit() and len(arg2) >= 10):
+    #     error = ValueError
+    # об'єднання попередніх двох умов у одну
+    elif command == "add" and (not arg1.isalpha() or not (arg2.isdigit() and len(arg2) >= 10)):
         error = ValueError
     elif command == "birthday" and not ("/" in arg2 and len(arg2) == 10):
         error = ValueError
